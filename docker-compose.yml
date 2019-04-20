@@ -1,0 +1,44 @@
+version: '2.1'
+
+services:
+    micro:
+        build: .
+        command: sh -c "go build && ./micro"
+        ports: 
+            - 3000:3000
+        volumes:
+            - ./:/go/src/micro
+        depends_on:
+            - db
+            - rabbit
+        links:
+            - rabbit
+
+    db:
+        image: postgres
+        restart: always
+        environment:
+            POSTGRES_USER: micro
+            POSTGRES_PASSWORD: micro
+            POSTGRES_DB: micro
+            POSTGRES_DB: micro
+
+    adminer:
+        image: adminer
+        restart: always
+        ports:
+        - 8080:8080
+
+    
+    rabbit:
+        image: rabbitmq:3-management
+        environment:
+            RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+            RABBITMQ_DEFAULT_USER: "rabbitmq"
+            RABBITMQ_DEFAULT_PASS: "rabbitmq"
+            RABBITMQ_DEFAULT_VHOST: "/"
+        ports:
+            - "15672:15672"
+            - "5672:5672"
+        volumes:
+            - ./rabbitmq_enabled_plugins:/etc/rabbitmq/enabled_plugins
