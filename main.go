@@ -5,14 +5,18 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"micro/app"
+	"log"
 	"os"
 
 	"github.com/goadesign/goa"
 	"github.com/goadesign/goa/middleware"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/streadway/amqp"
 )
+
+// Callback function type
+type Callback func(amqp.Delivery)
 
 var (
 	// DBName Database name
@@ -41,20 +45,10 @@ func main() {
 	}
 
 	resetVariables()
+	connectDB()
 
 	// Create service
 	service := goa.New("adder")
-
-	dbinfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", DBHost, DBPort, DBUser, DBPassword, DBName, DBSSLMode)
-	db, err := sql.Open("postgres", dbinfo)
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	if err = db.Ping(); err != nil {
-		panic(err)
-	}
 
 	// Mount middleware
 	service.Use(middleware.RequestID())
@@ -63,8 +57,10 @@ func main() {
 	service.Use(middleware.Recover())
 
 	// Mount "operands" controller
-	c := NewOperandsController(service, db)
-	app.MountOperandsController(service, c)
+	// c := NewOperandsController(service, db)
+	// app.MountOperandsController(service, c)
+	SendToMQ("micro", "micro.test", "topic", []byte("ABCD"))
+	GetFromMQ("micro", "micro.test", "topic", func(d amqp.Delivery) { log.Printf(" [message] %s", d.Body) })
 
 	// Start service
 	if err := service.ListenAndServe(":3000"); err != nil {
@@ -99,5 +95,20 @@ func resetVariables() {
 	}
 	if len(os.Getenv("PORT")) > 0 {
 		listenPort = os.Getenv("PORT")
+	}
+}
+
+func connectDB() {
+	dbinfo := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", DBHost, DBPort, DBUser, DBPassword, DBName, DBSSLMode,
+	)
+	db, err := sql.Open("postgres", dbinfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	if err = db.Ping(); err != nil {
+		panic(err)
 	}
 }

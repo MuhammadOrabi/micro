@@ -4,43 +4,8 @@
 //
 // Command:
 // $ goagen
-// --design=micro/design
-// --out=$(GOPATH)/src/micro
+// --design=playground/micro/design
+// --out=$(GOPATH)/src/playground/micro
 // --version=v1.3.1
 
 package app
-
-import (
-	"context"
-	"github.com/goadesign/goa"
-	"net/http"
-)
-
-// AddOperandsContext provides the operands add action context.
-type AddOperandsContext struct {
-	context.Context
-	*goa.ResponseData
-	*goa.RequestData
-}
-
-// NewAddOperandsContext parses the incoming request URL and body, performs validations and creates the
-// context used by the operands controller add action.
-func NewAddOperandsContext(ctx context.Context, r *http.Request, service *goa.Service) (*AddOperandsContext, error) {
-	var err error
-	resp := goa.ContextResponse(ctx)
-	resp.Service = service
-	req := goa.ContextRequest(ctx)
-	req.Request = r
-	rctx := AddOperandsContext{Context: ctx, ResponseData: resp, RequestData: req}
-	return &rctx, err
-}
-
-// OK sends a HTTP response with status code 200.
-func (ctx *AddOperandsContext) OK(resp []byte) error {
-	if ctx.ResponseData.Header().Get("Content-Type") == "" {
-		ctx.ResponseData.Header().Set("Content-Type", "text/plain")
-	}
-	ctx.ResponseData.WriteHeader(200)
-	_, err := ctx.ResponseData.Write(resp)
-	return err
-}

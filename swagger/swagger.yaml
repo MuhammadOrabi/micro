@@ -8,22 +8,7 @@ info:
   description: A teser for go
   title: The adder API
   version: ""
-paths:
-  /:
-    get:
-      description: add returns the sum of the left and right parameters in the response
-        body
-      operationId: operands#add
-      produces:
-      - text/plain
-      responses:
-        "200":
-          description: OK
-      schemes:
-      - http
-      summary: add operands
-      tags:
-      - operands
+paths: {}
 produces:
 - application/json
 - application/xml

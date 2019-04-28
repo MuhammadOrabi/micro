@@ -4,51 +4,27 @@
 //
 // Command:
 // $ goagen
-// --design=micro/design
-// --out=$(GOPATH)/src/micro
+// --design=playground/micro/design
+// --out=$(GOPATH)/src/playground/micro
 // --version=v1.3.1
 
 package cli
 
 import (
-	"context"
 	"encoding/json"
-	"github.com/goadesign/goa"
-	goaclient "github.com/goadesign/goa/client"
 	uuid "github.com/goadesign/goa/uuid"
 	"github.com/spf13/cobra"
-	"log"
-	"micro/client"
 	"os"
+	"playground/micro/client"
 	"strconv"
 	"strings"
 	"time"
 )
 
-type (
-	// AddOperandsCommand is the command line data structure for the add action of operands
-	AddOperandsCommand struct {
-		PrettyPrint bool
-	}
-)
+type ()
 
 // RegisterCommands registers the resource action CLI commands.
 func RegisterCommands(app *cobra.Command, c *client.Client) {
-	var command, sub *cobra.Command
-	command = &cobra.Command{
-		Use:   "add",
-		Short: `add returns the sum of the left and right parameters in the response body`,
-	}
-	tmp1 := new(AddOperandsCommand)
-	sub = &cobra.Command{
-		Use:   `operands ["/"]`,
-		Short: ``,
-		RunE:  func(cmd *cobra.Command, args []string) error { return tmp1.Run(c, args) },
-	}
-	tmp1.RegisterFlags(sub, c)
-	sub.PersistentFlags().BoolVar(&tmp1.PrettyPrint, "pp", false, "Pretty print response body")
-	command.AddCommand(sub)
-	app.AddCommand(command)
 }
 
 func intFlagVal(name string, parsed int) *int {
@@ -202,28 +178,4 @@ func boolArray(ins []string) ([]bool, error) {
 		vals = append(vals, *val)
 	}
 	return vals, nil
-}
-
-// Run makes the HTTP request corresponding to the AddOperandsCommand command.
-func (cmd *AddOperandsCommand) Run(c *client.Client, args []string) error {
-	var path string
-	if len(args) > 0 {
-		path = args[0]
-	} else {
-		path = "/"
-	}
-	logger := goa.NewLogger(log.New(os.Stderr, "", log.LstdFlags))
-	ctx := goa.WithLogger(context.Background(), logger)
-	resp, err := c.AddOperands(ctx, path)
-	if err != nil {
-		goa.LogError(ctx, "failed", "err", err)
-		return err
-	}
-
-	goaclient.HandleResponse(c.Client, resp, cmd.PrettyPrint)
-	return nil
-}
-
-// RegisterFlags registers the command flags with the command line.
-func (cmd *AddOperandsCommand) RegisterFlags(cc *cobra.Command, c *client.Client) {
 }

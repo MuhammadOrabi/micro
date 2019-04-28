@@ -4,8 +4,8 @@
 //
 // Command:
 // $ goagen
-// --design=micro/design
-// --out=$(GOPATH)/src/micro
+// --design=playground/micro/design
+// --out=$(GOPATH)/src/playground/micro
 // --version=v1.3.1
 
 package app
